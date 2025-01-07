@@ -124,16 +124,16 @@ class CarbonProcessingUnitData(UnitModelBlockData):
 
         # Add vars for stream total mole flows
         self.inlet_flow_mol = Var(
-            self.flowsheet().config.time, initialize=3600, units=flow_units
+            self.flowsheet().config.time, initialize=5.5, units=flow_units
         )
         self.pureco2_flow_mol = Var(
-            self.flowsheet().config.time, initialize=900, units=flow_units
+            self.flowsheet().config.time, initialize=1.4, units=flow_units
         )
         self.water_flow_mol = Var(
-            self.flowsheet().config.time, initialize=300, units=flow_units
+            self.flowsheet().config.time, initialize=0.46, units=flow_units
         )
         self.vent_flow_mol = Var(
-            self.flowsheet().config.time, initialize=2400, units=flow_units
+            self.flowsheet().config.time, initialize=3.69, units=flow_units
         )
 
         # Add vars for stream component mole fractions
@@ -162,25 +162,25 @@ class CarbonProcessingUnitData(UnitModelBlockData):
         self.inlet_flow_mol_comp = Var(
             self.flowsheet().config.time,
             self.component_list,
-            initialize=3600 / len(self.component_list),
+            initialize=5.5 / len(self.component_list),
             units=flow_units,
         )
         self.pureco2_flow_mol_comp = Var(
             self.flowsheet().config.time,
             self.component_list,
-            initialize=900 / len(self.component_list),
+            initialize=1.4 / len(self.component_list),
             units=flow_units,
         )
         self.water_flow_mol_comp = Var(
             self.flowsheet().config.time,
             self.component_list,
-            initialize=300 / len(self.component_list),
+            initialize=0.46 / len(self.component_list),
             units=flow_units,
         )
         self.vent_flow_mol_comp = Var(
             self.flowsheet().config.time,
             self.component_list,
-            initialize=2400 / len(self.component_list),
+            initialize=3.69 / len(self.component_list),
             units=flow_units,
         )
 
@@ -667,56 +667,57 @@ class CarbonProcessingUnitData(UnitModelBlockData):
         iscale.set_scaling_factor(self.pureco2_pressure[0.0], 1e-5)
         iscale.set_scaling_factor(self.water_pressure[0.0], 1e-5)
         iscale.set_scaling_factor(self.vent_pressure[0.0], 1e-5)
-        iscale.set_scaling_factor(self.heat_duty, 1e-6)
-        iscale.set_scaling_factor(self.work, 1e-6)
+        iscale.set_scaling_factor(self.heat_duty, 1e-3)
+        iscale.set_scaling_factor(self.work, 1e-3)
 
 
 def compressor_power_fun(x1, x2, x3, x4, x5, x6):
     return (
-        16592.309504827182536246 * x1
-        + 17806584.568199951201677 * x3
-        - 15529374.443028066307306
+        17434.418363875764043769 * x1
+        + 97500.668662670461344533 * x3
+        - 38526.228644187758618500 * x6
+        - 86253.127234556712210178
     )
 
 
 def heat_duty_fun(x1, x2, x3, x4, x5, x6):
     return (
-        27431.344430845900205895 * x1
-        + 25040167.356691692024469 * x3
-        - 21837134.557537198066711
+        28423.331945475612883456 * x1
+        + 135463.70928047975758091 * x3
+        + 199648.42285669266129844 * x5
+        - 130432.67993951193057001
     )
 
 
 def pureco2_flow_mol_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.84491492199656215156267 * x1
-        + 1381.8486099781443954271 * x3
-        - 1204.9518833417739642755
+        0.86256645074482929391735 * x1
+        + 7.5868349854838426082893 * x3
+        + 2.5683340568096344469495 * x5
+        - 6.8724917505075557855321
     )
 
 
 def pureco2_ar_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
-    return (
-        0.87539452852376016910194e-007 * x1
-        + 0.31019041198388018487631e-001 * x2
-        - 0.16384578403083416373726e-002 * x5
-        - 0.11401484796994311183421e-002 * x6
-    )
+    return 0
 
 
 def pureco2_co2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.84491226339466729555738 * x1
-        + 1381.8776912884593457420 * x3
-        - 1204.9772340007211823831
+        0.86256282082183155512922 * x1
+        + 7.5868589732938795933137 * x3
+        + 2.5684555484305224837271 * x5
+        - 6.8725189540564848300619
     )
 
 
 def pureco2_o2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.25557869821781261075201e-005 * x1
-        - 0.30160307289038564698691e-001 * x3
-        + 0.26298816057506283622169e-001
+        0.36029681170087603594727e-005 * x1
+        + 0.81048859672514233110779e-004 * x3
+        + 0.17485279491580063603376e-003 * x4
+        - 0.60731902401503425493329e-003 * x6
+        - 0.74465587358711363640505e-004
     )
 
 
@@ -725,44 +726,41 @@ def pureco2_h2o_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
 
 
 def pureco2_n2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
-    return 0.69246160597454559832190e-006 * x3 - 0.56005883473002498644045e-006
+    return 0.00
 
 
 def pureco2_temperature_fun(x1, x2, x3, x4, x5, x6):
     return (
-        10.267585306350582641244 * x2
-        + 32.023906991174357017371 * x3
-        + 30.302544593098598824099 * x4
-        + 278.86088998572887476257
+        31.335987659775170754983 * x3
+        + 29.338646592747345209773 * x5
+        - 0.62508832086563159702308 * x6
+        + 279.52772840516507812936
     )
 
 
 def pureco2_pressure_fun(x1, x2, x3, x4, x5, x6):
-    return -0.28666413419197245189076e-011 * x1 + 15271893.400000000372529
+    return -0.28666413419197245189076e-011 * x1 + 15271887.4
 
 
 def water_flow_mol_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.64898275330398047522351e-001 * x1
-        + 995.23584715669267097837 * x4
-        - 64.595577093201725915605
+        0.50048856510115695417351e-001 * x1
+        - 0.26876279743991354775901 * x3
+        - 0.32816337228988323726497 * x4
+        + 5.0818885460168132794934 * x5
     )
 
 
 def water_ar_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
-    return (
-        0.23736607897806708417605e-008 * x1
-        + 0.83689507888515507049582e-003 * x2
-        - 0.14749984695782550662112e-003 * x5
-    )
+    return 0.00
 
 
 def water_co2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.36504473074529521385892e-005 * x1
-        + 0.39821667908625070844697e-002 * x3
-        + 0.30283921974618616818065e-001 * x4
-        - 0.54375872162499300915828e-002
+        0.32345843779494522461377e-005 * x1
+        + 0.20036103929565019752005e-004 * x3
+        + 0.13930343168436210270905e-003 * x5
+        - 0.24860239464912060956391e-004
     )
 
 
@@ -776,9 +774,10 @@ def water_o2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
 
 def water_h2o_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.64894576227660510925332e-001 * x1
-        + 995.21157061827375400753 * x4
-        - 64.594007608678808196601
+        0.50045580817356778713378e-001 * x1
+        - 0.26875725354282542500783 * x3
+        - 0.32814242590299697033274 * x4
+        + 5.0817735176259732909898 * x5
     )
 
 
@@ -787,47 +786,44 @@ def water_n2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
 
 
 def water_temperature_fun(x1, x2, x3, x4, x5, x6):
-    return (
-        0.47345180660722969989695e-002 * x3
-        - 1.1291949419088465056404 * x4
-        - 0.13703395454789617582958e-001 * x5
-        + 311.08988060641769379799
-    )
+    return -0.94623844324241834780054 * x5 + 311.07842775317033101601
 
 
 def water_pressure_fun(x1, x2, x3, x4, x5, x6):
-    return 117210.91999999999825377
+    return 199569.105
 
 
 def vent_flow_mol_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.90250925128294370858306e-001 * x1
-        - 1373.8223230605847220431 * x3
-        + 1197.7852419317096064333
+        0.87429795464447124242469e-001 * x1
+        + 7.5633830697526196473746 * x4
+        + 8.0913400963015806865997 * x6
+        - 0.46241258365764381643714
     )
 
 
 def vent_ar_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.27178896806122057258626e-002 * x1
-        + 953.43145974385458885081 * x2
-        - 168.06049873202732669597 * x5
+        0.54502082079885424102661e-003 * x1
+        + 5.6351068061362337147102 * x2
+        - 0.31057702707282478643558e-002
     )
 
 
 def vent_co2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.27083917235717330090905e-001 * x1
-        - 407.85524106058562665567 * x3
-        + 355.59132055263916072363
+        0.26152878793235509458093e-001 * x1
+        + 2.2447196492415799617959 * x4
+        + 2.5087396266850379156210 * x6
+        - 0.13837706198977658966776
     )
 
 
 def vent_o2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
     return (
-        0.44846813052226472406936e-001 * x1
-        - 956.47536271014735120843 * x3
-        + 834.42603654916342748038
+        0.50160162250745099488114e-001 * x1
+        + 5.3178226233044645354653 * x4
+        - 0.26487828624086401374527
     )
 
 
@@ -836,7 +832,11 @@ def vent_h2o_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
 
 
 def vent_n2_flow_mol_comp_fun(x1, x2, x3, x4, x5, x6):
-    return 0.15024528735008041077648e-001 * x1
+    return (
+        0.10599982947462937080130e-001 * x1
+        + 5.5785912218942588225445 * x6
+        - 0.59206196090685059285619e-001
+    )
 
 
 def vent_temperature_fun(x1, x2, x3, x4, x5, x6):
