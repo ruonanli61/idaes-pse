@@ -81,6 +81,9 @@ _log = idaeslog.getLogger(__name__)
 # Power Plant Costing Library
 # -----------------------------------------------------------------------------
 
+# Conversion factor to convert 2018 USD to 2023 USD
+CONVERSION_FACTOR = 802.600 / 615.9
+
 
 def custom_power_plant_currency_units():
     """
@@ -123,7 +126,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
         for each costing method to separate the parameters for each method.
         """
         # Set the base year for all costs
-        self.base_currency = pyunits.USD_2018
+        self.base_currency = pyunits.USD_2023
         # Set a base period for all operating costs
         self.base_period = pyunits.year
 
@@ -133,9 +136,9 @@ class QGESSCostingData(FlowsheetCostingBlockData):
         total_plant_cost=None,
         nameplate_capacity=650,
         capacity_factor=0.85,
-        labor_rate=38.50,
+        labor_rate=45.04,
         labor_burden=30,
-        operators_per_shift=6,
+        operators_per_shift=0.25,
         tech=1,
         # arguments related to total owners costs
         land_cost=None,
@@ -151,7 +154,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
         waste=None,
         transport_cost=None,
         tonne_CO2_capture=None,
-        CE_index_year="2018",
+        CE_index_year="2023",
     ):
         """
         This method builds process-wide costing, including fixed and variable
@@ -352,11 +355,12 @@ class QGESSCostingData(FlowsheetCostingBlockData):
             )
 
             self.tasc_toc_factor = Param(
-                initialize=1.093,
+                initialize=1.183,  # 1.093,
                 mutable=True,
-                doc="TASC/TOC factor from Exhibit 3-7 reference 1, real for"
-                + " three years 1.093, real for five years 1.154, nominal for"
-                + " three years 1.242, nominal for five years 1.289",
+                doc="TASC/TOC factor from Exhibit 3-7 reference 1, for"
+                + " power generation industry: one year 1.161, two"
+                + " years 1.175, three years 1.093, four years 1.203,"
+                + " five years 1.213",
             )
 
             self.total_as_spent_cost = Expression(
@@ -364,11 +368,9 @@ class QGESSCostingData(FlowsheetCostingBlockData):
             )
 
             self.fixed_charge_factor = Param(
-                initialize=0.0707,
+                initialize=0.077,
                 mutable=True,
-                doc="Fixed charge rate from Exhibit 3-5 based on CRF values,"
-                + " real for three/five years 0.0707, nominal for three/five"
-                + " years 0.0886",
+                doc="Fixed charge rate from Exhibit 3-5 reference 1",
             )
             self.annualized_cost = Expression(
                 expr=self.fixed_charge_factor * self.total_as_spent_cost
@@ -535,7 +537,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
         scaled_param,
         tech,
         ccs="B",
-        CE_index_year="2018",
+        CE_index_year="2023",
         additional_costing_params=None,
         use_additional_costing_params=False,
     ):
@@ -1170,7 +1172,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
         scaled_param,
         temp_C=None,
         n_equip=1,
-        CE_index_year="2018",
+        CE_index_year="2023",
         custom_accounts=None,
     ):
         """
@@ -1210,7 +1212,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
             raise AttributeError(
                 "CE_index_year %s is not a valid currency base option. "
                 "Valid CE index options include CE500, CE394 and years from "
-                "1990 to 2020." % (CE_index_year)
+                "1990 to 2023." % (CE_index_year)
             )
 
         # load sCO2 costing dictionary
@@ -1433,7 +1435,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
     # -----------------------------------------------------------------------------
     # Air Separation Unit Costing Library
     # -----------------------------------------------------------------------------
-    def get_ASU_cost(self, scaled_param, CE_index_year="2018"):
+    def get_ASU_cost(self, scaled_param, CE_index_year="2023"):
         # scaled parameter is O2 flowrate in TPD
         # only one set of parameters used, ref is hard coded for TPD and 2017
 
@@ -1466,7 +1468,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
             raise AttributeError(
                 "CE_index_year %s is not a valid currency base option. "
                 "Valid CE index options include CE500, CE394 and years from "
-                "1990 to 2020." % (CE_index_year)
+                "1990 to 2023." % (CE_index_year)
             )
 
         # define parameters
@@ -1569,7 +1571,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
         net_power=None,
         nameplate_capacity=650,
         capacity_factor=0.85,
-        labor_rate=38.50,
+        labor_rate=45.05,
         labor_burden=30,
         operators_per_shift=6,
         tech=1,
@@ -1808,7 +1810,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
         resources,
         rates,
         prices=None,
-        CE_index_year="2018",
+        CE_index_year="2023",
         capacity_factor=0.85,
     ):
         """
@@ -1845,7 +1847,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
             raise AttributeError(
                 "CE_index_year %s is not a valid currency base option. "
                 "Valid CE index options include CE500, CE394 and years from "
-                "1990 to 2020." % (CE_index_year)
+                "1990 to 2023." % (CE_index_year)
             )
 
         # assert arguments are correct types
@@ -1866,17 +1868,49 @@ class QGESSCostingData(FlowsheetCostingBlockData):
         # the currency units are millions of USD, so all prices need a 1e-6
         # multiplier to get USD
         default_prices = {
-            "natural_gas": 4.42 * 1e-6 * CE_index_units / pyunits.MBtu,  # $/MMbtu
-            "coal": 51.96 * 1e-6 * CE_index_units / pyunits.ton,
-            "water": 1.90e-3 * 1e-6 * CE_index_units / pyunits.gallon,
-            "water_treatment_chemicals": 550 * 1e-6 * CE_index_units / pyunits.ton,
-            "ammonia": 300 * 1e-6 * CE_index_units / pyunits.ton,
-            "SCR_catalyst": 150 * 1e-6 * CE_index_units / pyunits.ft**3,
-            "triethylene_glycol": 6.80 * 1e-6 * CE_index_units / pyunits.gallon,
-            "SCR_catalyst_waste": 2.50 * 1e-6 * CE_index_units / pyunits.ft**3,
-            "triethylene_glycol_waste": 0.35 * 1e-6 * CE_index_units / pyunits.gallon,
-            "amine_purification_unit waste": 38 * 1e-6 * CE_index_units / pyunits.ton,
-            "thermal_reclaimer_unit_waste": 38 * 1e-6 * CE_index_units / pyunits.ton,
+            "natural_gas": 3.41 * 1e-6 * CE_index_units / pyunits.MBtu,  # $/MMbtu
+            "coal": 51.96 * 1e-6 * CONVERSION_FACTOR * CE_index_units / pyunits.ton,
+            "water": 1.90e-3
+            * 1e-6
+            * CONVERSION_FACTOR
+            * CE_index_units
+            / pyunits.gallon,
+            "water_treatment_chemicals": 550
+            * 1e-6
+            * CONVERSION_FACTOR
+            * CE_index_units
+            / pyunits.ton,
+            "ammonia": 300 * 1e-6 * CONVERSION_FACTOR * CE_index_units / pyunits.ton,
+            "SCR_catalyst": 150
+            * 1e-6
+            * CONVERSION_FACTOR
+            * CE_index_units
+            / pyunits.ft**3,
+            "triethylene_glycol": 6.80
+            * 1e-6
+            * CONVERSION_FACTOR
+            * CE_index_units
+            / pyunits.gallon,
+            "SCR_catalyst_waste": 2.50
+            * 1e-6
+            * CONVERSION_FACTOR
+            * CE_index_units
+            / pyunits.ft**3,
+            "triethylene_glycol_waste": 0.35
+            * 1e-6
+            * CONVERSION_FACTOR
+            * CE_index_units
+            / pyunits.gallon,
+            "amine_purification_unit waste": 38
+            * 1e-6
+            * CONVERSION_FACTOR
+            * CE_index_units
+            / pyunits.ton,
+            "thermal_reclaimer_unit_waste": 38
+            * 1e-6
+            * CONVERSION_FACTOR
+            * CE_index_units
+            / pyunits.ton,
         }
 
         # add entries from prices to default_prices
@@ -2110,7 +2144,7 @@ class QGESSCostingData(FlowsheetCostingBlockData):
             raise AttributeError(
                 "CE_index_year %s is not a valid currency base option. "
                 "Valid CE index options include CE500, CE394 and years from "
-                "1990 to 2020." % (CE_index_year)
+                "1990 to 2023." % (CE_index_year)
             )
 
         TPC_list = []
